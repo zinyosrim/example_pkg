@@ -12,8 +12,20 @@ class GraphQL(Shopify):
         Shopify (ABC): Base class for REST and GraphQL
     """
 
-    def __init__(self, url, headers, payload, query_filter=None):
-        super().__init__()
+    def __init__(self, url, headers, payload, query_filter=None,
+                 max_cost_points=1000, leak_rate=50, max_retries=5 ):
+        """Constructor for GraphQL/Shopify request
+
+        Args:
+            url (String): [description]
+            headers ([type]): [description]
+            payload ([type]): [description]
+            query_filter ([type], optional): [description]. Defaults to None.
+            max_cost_points (int, optional): [description]. Defaults to 1000.
+            leak_rate (int, optional): [description]. Defaults to 50.
+            max_retries (int, optional): [description]. Defaults to 5.
+        """
+        super().__init__(max_retries=max_retries)
         self.log = logger.configure("default")
         self.__url = url
         self.__headers = headers
@@ -81,7 +93,10 @@ class GraphQL(Shopify):
         """
         object_data = self.api_object_data(response)
         has_next_page = object_data['pageInfo']['hasNextPage'] 
-        return object_data['edges'][-1]['cursor'] if has_next_page else ""
+        try:
+            return object_data['edges'][-1]['cursor'] if has_next_page else ""
+        except:
+            self.log.debug("There is no cursor. Check if it's included, if not put a line with cursor after node.")
 
     def delay(self, response):
         max_cost_points = int(config()["general"]["max_cost_points"])
