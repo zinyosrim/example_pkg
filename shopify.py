@@ -8,8 +8,9 @@ from time import sleep
 
 class Shopify(ABC):
 
-    def __init__(self):
+    def __init__(self, max_retries=5):
         super().__init__()
+        self.__max_retries = max_retries
         self.log = logger.configure("default")
 
     @abstractmethod
@@ -95,16 +96,14 @@ class Shopify(ABC):
 
     def request(self, *args, **kwargs):
         """Create a single HTTP network request to Shopify. In case of connection issues
-        repeat request a certain number of times (can be set in config.yml),
-        after waiting a couple of seconds. After each failure the waiting time is 
-        doubled.
+        repeat request a certain number of times, after waiting a couple of seconds. 
+        Starting from 1s delay, after each failure the waiting time is doubled.
 
         Returns:
             Dict -- complete JSON data of the response loaded into a dict
         """
-        max_retries = int(config()["general"]["max_retries"])
         retries_count, wait_seconds = 0, 1
-        while retries_count < max_retries:
+        while retries_count < self.__max_retries:
             response = requests.request(*args, **kwargs)
             if response.status_code == 200:
                 return response
