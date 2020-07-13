@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import yaml
 import logger
 import os
+import json
 
 class GraphqlQueryString:
     def __init__(
@@ -76,6 +77,20 @@ def log_filename():
 
 def first_key_of_dict(d):
     return next(iter(d))
+
+
+def payload_formatter(payload: str) -> str:
+    """Formats the payload output from Insomnia/Postman. Removes special characters
+    and duplicates curly brackets
+
+    Args:
+        payload (str): String which comes after payload = 
+
+    Returns:
+        str: formatted payload
+    """
+    parsed = json.loads(payload)
+    parsed['query'].replace('{', '{{').replace('}','}}').replace('\\n', '')
 
 
 

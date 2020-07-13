@@ -6,7 +6,7 @@ from response_processor import ResponseProcessor
 from util import config
 from math import ceil
 from time import sleep
-from query_parameters_orders import url, headers, payload
+from queries_orders import url, headers, payload
 
 
 class Orders:

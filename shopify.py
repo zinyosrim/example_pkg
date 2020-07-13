@@ -85,19 +85,19 @@ class Shopify(ABC):
 
     @abstractmethod
     def delay(self, response=None):
-        """Computes the necessary delay time from the Shopify throtteling data to
+        """Compute the necessary delay time from the Shopify throtteling data to
         prevent blocking by the server. Sleep for the duration of waiting time (seconds).
-        Max. allowed cost is 
         
         Arguments:
             shopify_data {ShopifyGraphqlData} -- Wrapper class for JSON response of query
         """
         pass
 
-    def request(self, *args, **kwargs):
-        """Create a single HTTP network request to Shopify. In case of connection issues
-        repeat request a certain number of times, after waiting a couple of seconds. 
-        Starting from 1s delay, after each failure the waiting time is doubled.
+    def api_request(self, *args, **kwargs):
+        """Create a single HTTP network request to Shopify. Abstracts from the kind of request 
+        which couls be GraphQL or REST. In case of connection issues repeat request a certain 
+        number of times, after waiting a couple of seconds. Starting from 1s delay, after each 
+        failure the waiting time is doubled.
 
         Returns:
             Dict -- complete JSON data of the response loaded into a dict
@@ -105,9 +105,11 @@ class Shopify(ABC):
         retries_count, wait_seconds = 0, 1
         while retries_count < self.__max_retries:
             response = requests.request(*args, **kwargs)
+
             if response.status_code == 200:
                 return response
             else:
+                # request failed. Try again, but wait a bit
                 self.log.debug(
                     "Delaying next Shopify query for {} seconds".format(wait_seconds)
                 )
@@ -135,13 +137,15 @@ class Shopify(ABC):
                                         self.payload(), self.headers()
         has_next = True
         counter = 0
-        self.log.debug('Starting session -  method={}, url={}, payload={}, headers={}'\
-            .format(method, url, payload, headers))
         
+        # there is more data which could be obtained by an API request. 
         while has_next:
             counter = counter + 1
             self.log.info("Initiate single API request #{}".format(counter))
-            response = self.request(method, url, data=payload, headers=headers)
+            response = self.api_request(method, url, data=payload, headers=headers)
+
+            self.log.debug('response={}'.format(response))
+            self.log.debug('response.text={}'.format(response.text))
             yield self.json_data(response)
 
             if self.has_next(response):
@@ -155,7 +159,7 @@ class Shopify(ABC):
 
     def data(self):
             """Wrapper to fetch all requested Shopify data packing it into a 
-            list of dicts.nInitiate all requests and return the complete data.
+            list of dicts. Initiate all requests and return the complete data.
 
             Returns:
                 List of Dicts -- All requested data collected from a number of requests
@@ -169,3 +173,4 @@ class Shopify(ABC):
                     data.append(json_data)
             self.log.info("Shopify returned a total of {} records:".format(len(data),data))
             return data
+

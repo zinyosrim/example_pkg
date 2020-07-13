@@ -1,30 +1,26 @@
-from graphql import GraphQL
-from rest import REST
 import logger
+import os
 import numpy as np
 import pandas as pd
+from pprint import pprint
+
+from graphql import GraphQL
+from rest import REST
+from metafields import Metafields
+from queries import ProductsByTag
+
 
 def main():
     log = logger.configure("default")
-
-    # Example Query Filter
-    qf = ('query:"created_at:<=2020-07-01 ' +
-            'AND created_at:>=2020-01-20 ' +
-            'AND source_name:web", ' +
-            'sortKey: CREATED_AT, first: 200, reverse:true')
-
+    os.environ['SHOPIFY_STORENAME'] = 'radiat'
+    os.environ['SHOPIFY_STORE_API_PASSWORD'] = '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' 
+    os.environ['SHOPIFY_API_VERSION'] = '2020-07'
     
-    #REST
-    #from query_parameters_payout_transactions import url, payload, headers
-    #shopify = REST(url=url, headers=headers)
-    
-    # GraphQL
-    from query_parameters_orders import url, payload, headers
-    #qf = ""
-    #payload= "{{shop {{name description email}}}}"
-    shopify = GraphQL(url=url, headers=headers, payload=payload, query_filter=qf)
-    data = shopify.data()
+    query = ProductsByTag(tag="AW2020")
+    url, headers, payload, query_filter = query.url(), query.headers(), query.payload(), query.query_filter()
 
+    shopify = GraphQL(url, headers, payload, query_filter)
+    print(shopify.data())
 
 if __name__ == '__main__':   
     main()

@@ -8,6 +8,10 @@ import logger
 
 class REST(Shopify):
     """Class for submitting REST requests to Shopify
+    Usage: 
+
+    #from queries_payout_transactions import url, payload, headers
+    #shopify = REST(url=url, headers=headers)
 
     Args:
         Shopify (ABC): Base class for REST and GraphQL
