@@ -25,7 +25,20 @@ class GetProductsByTag(GraphQLRequest):
         self.run()
 
     def payload(self) -> str:
-        return "{{\"query\":\"{{products {} {{edges {{cursor node {{id handle}} }} }} }}\"}}"
+        pl =    '{{'\
+                    '"query":"{{'\
+                        'products {} {{'\
+                            'edges {{'\
+                                'cursor '\
+                                'node {{ '\
+                                    'id '\
+                                    'handle'\
+                                '}}'\
+                            '}}'\
+                        '}}'\
+                    '}}"'\
+                '}}'
+        return pl
 
     def query_filter(self) -> str:
         return 'first: {}, query:\\\"{}\\\"'.format(self._number_of_products, self._tag)
@@ -67,17 +80,20 @@ class CreateMetafield(GraphQLRequest):
 
     def payload(self) -> str:
         pl = '{{'\
-                '"query":"mutation($input: ProductInput!)' \
-                    '{{productUpdate(input: $input) ' \
-                        '{{product ' \
-                            '{{metafields(first: 100) ' \
-                                '{{edges ' \
-                                    '{{node ' \
-                                        '{{id namespace key value'\
-                                        '}}' \
-                                    ' }}' \
-                                '}} '\
-                            '}} '\
+                '"query":"mutation($input: ProductInput!) {{'\
+                    'productUpdate(input: $input) {{'\
+                        'product {{'\
+                            'metafields(first: 100) {{'\
+                                'edges {{' \
+                                    'node {{'\
+                                        'id '\
+                                        'namespace '\
+                                        'key '\
+                                        'value '\
+                                    '}}'\
+                                '}}'\
+                            '}}'\
+                        '}}'\
                         'userErrors {{'\
                             'field,'\
                             'message'\

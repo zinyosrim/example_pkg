@@ -155,7 +155,7 @@ class Shopify(ABC):
                     .format(has_next, url))
             else:
                 has_next = False
-                self.log.info("No additional data available. Done with Shopify requests")
+                self.log.debug("No additional data available. Done with Shopify requests in current Session")
 
     def data(self):
             """Wrapper to fetch all requested Shopify data packing it into a 
@@ -169,8 +169,18 @@ class Shopify(ABC):
             for json_data in self.session():
                 if type(json_data) == list:
                     data.extend(json_data)
-                else:
+                if type(json_data) == dict:
+                    try:
+                        assert json_data['userErrors'] == []
+                    except AssertionError as e:
+                        self.log.error('Mutation has errors: {}'.format(e))
+                        self.log.error('json_data = \{}'.format(json_data))
+                    except KeyError as e:
+                        self.log.error('No mutation or `userErrors` missing in query'.format(e))
+                    
                     data.append(json_data)
-            self.log.info("Shopify returned a total of {} records:".format(len(data),data))
+            
+            self.log.debug("Shopify returned a total of {} records:".format(len(data),data))
+
             return data
 
