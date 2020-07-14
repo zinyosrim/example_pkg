@@ -2,7 +2,7 @@ import logger
 import os
 import numpy as np
 import pandas as pd
-from queries import ProductsByTag
+from queries import GetProductsByTag
 from graphql import GraphQL
 
 class Metafields:
@@ -35,7 +35,7 @@ class Metafields:
             query_params['tag'] = self.__tag 
 
         # Get list of all products
-        query = ProductsByTag(**query_params)
+        query = GetProductsByTag(**query_params)
         shopify = GraphQL  (url=query.url(), headers=query.headers(), 
                             payload=query.payload(), query_filter=query.query_filter())
         products = shopify.data()

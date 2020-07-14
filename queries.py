@@ -17,7 +17,7 @@ class GraphQLRequest(ABC):
     def headers(self) -> dict:
         return {'x-shopify-access-token': self._password,'content-type': 'application/json'}
 
-class ProductsByTag(GraphQLRequest):
+class GetProductsByTag(GraphQLRequest):
     def __init__(self, tag: str = '', number_of_products: int = 50):
         super().__init__()
         self._number_of_products = number_of_products
