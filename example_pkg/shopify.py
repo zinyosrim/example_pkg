@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import requests
 import logger
-from json import loads
+import json
 from util import config
 from pprint import pprint
 from time import sleep
@@ -143,8 +143,7 @@ class Shopify(ABC):
             counter = counter + 1
             self.log.info("Initiate single API request #{}".format(counter))
             response = self.api_request(method, url, data=payload, headers=headers)
-
-            self.log.debug('response={}'.format(response))
+            #self.log.debug('response={}'.format(response))
             self.log.debug('response.text={}'.format(response.text))
             yield self.json_data(response)
 
@@ -164,21 +163,30 @@ class Shopify(ABC):
             Returns:
                 List of Dicts -- All requested data collected from a number of requests
             """
-            self.log.info("Starting to request data from Shopify")
+            #self.log.debug("Starting to request data from Shopify")
             data = []
+            error_log = []
+
             for json_data in self.session():
                 if type(json_data) == list:
                     data.extend(json_data)
+
                 if type(json_data) == dict:
                     try:
                         assert json_data['userErrors'] == []
-                    except AssertionError as e:
-                        self.log.error('Mutation has errors: {}'.format(e))
-                        self.log.error('json_data = \{}'.format(json_data))
+                    except AssertionError:
+                        error_log.append(json_data)
+                        self.log.error('Query has errors: {}'.format(json_data['userErrors'][0]['message']))
                     except KeyError as e:
                         self.log.error('No mutation or `userErrors` missing in query'.format(e))
-                    
+                        raise
+
                     data.append(json_data)
+                    # write data with errors
+                    if error_log:
+                        with open('data/error.log', 'a+', encoding='utf-8') as f:
+                            json.dump(data, f, ensure_ascii=False, indent=4)
+                        self.log.error('Could not output all queried data. Check `data/error.log`.')
             
             self.log.debug("Shopify returned a total of {} records:".format(len(data),data))
 

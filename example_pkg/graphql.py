@@ -84,7 +84,8 @@ class GraphQL(Shopify):
             return self.api_object_data(response)['pageInfo']['hasNextPage']
         except:
             if response:
-                self.log.debug('No next page, "hasNextPage" missing in response')
+                #self.log.debug('No next page')
+                pass
             else:
                 self.log.debug('Response is empty')
     
